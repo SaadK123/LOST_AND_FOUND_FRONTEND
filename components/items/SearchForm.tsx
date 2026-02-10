@@ -49,8 +49,9 @@ export default function SearchForm() {
     setValue('latitude', lat);
     setValue('longitude', lng);
     setValue('locationName', address);
-    if (city) setValue('city', city);
-    if (country) setValue('country', country);
+    // Cast to any to avoid narrow key union inference issues during type-check
+    if (city) setValue('city' as any, city);
+    if (country) setValue('country' as any, country);
   };
 
   const onSubmit = async (data: SearchFormData) => {
