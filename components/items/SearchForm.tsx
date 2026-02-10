@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Path, Resolver, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import InteractiveMapPicker from '../map/InteractiveMapPicker';
 import { itemsApi } from '@/lib/api/items';
 import { ITEM_CATEGORIES } from '@/lib/types/item';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+
+const InteractiveMapPicker = dynamic(() => import('../map/InteractiveMapPicker'), {
+  ssr: false,
+});
 
 const searchSchema = z.object({
   description: z.string().min(10, 'Describe your item in detail (min 10 chars)'),
