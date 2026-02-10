@@ -1,29 +1,42 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-
-// Dynamically import Leaflet to avoid SSR issues
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-);
-const useMapEvents = dynamic(
-  () => import('react-leaflet').then((mod) => mod.useMapEvents),
-  { ssr: false }
-);
+import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
+import type { LeafletMouseEvent } from 'leaflet';
 
 interface InteractiveMapPickerProps {
   onLocationSelect: (lat: number, lng: number, address: string, city?: string, country?: string) => void;
   initialPosition?: [number, number];
+}
+
+interface LocationMarkerProps {
+  position: [number, number];
+  setPosition: (position: [number, number]) => void;
+  onLocationSelect: (lat: number, lng: number, address: string, city?: string, country?: string) => void;
+}
+
+function LocationMarker({ position, setPosition, onLocationSelect }: LocationMarkerProps) {
+  useMapEvents({
+    click(e: LeafletMouseEvent) {
+      const { lat, lng } = e.latlng;
+      setPosition([lat, lng]);
+
+      // Reverse geocoding using OpenStreetMap Nominatim
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+        .then(res => res.json())
+        .then(data => {
+          const city = data.address?.city || data.address?.town || data.address?.village || '';
+          const country = data.address?.country || '';
+          onLocationSelect(lat, lng, data.display_name, city, country);
+        })
+        .catch(err => {
+          console.error('Geocoding error:', err);
+          onLocationSelect(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        });
+    },
+  });
+
+  return <Marker position={position} />;
 }
 
 export default function InteractiveMapPicker({
@@ -47,30 +60,6 @@ export default function InteractiveMapPicker({
     }
   }, []);
 
-  function LocationMarker() {
-    useMapEvents({
-      click(e: any) {
-        const { lat, lng } = e.latlng;
-        setPosition([lat, lng]);
-
-        // Reverse geocoding using OpenStreetMap Nominatim
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-          .then(res => res.json())
-          .then(data => {
-            const city = data.address?.city || data.address?.town || data.address?.village || '';
-            const country = data.address?.country || '';
-            onLocationSelect(lat, lng, data.display_name, city, country);
-          })
-          .catch(err => {
-            console.error('Geocoding error:', err);
-            onLocationSelect(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-          });
-      },
-    });
-
-    return <Marker position={position} />;
-  }
-
   if (!mounted) {
     return (
       <div className="h-96 w-full rounded-lg border-2 border-blue-500 bg-gray-100 flex items-center justify-center">
@@ -91,7 +80,11 @@ export default function InteractiveMapPicker({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <LocationMarker />
+        <LocationMarker
+          position={position}
+          setPosition={setPosition}
+          onLocationSelect={onLocationSelect}
+        />
       </MapContainer>
       <p className="text-sm text-gray-600 mt-2 text-center">
         📍 Click anywhere on the map to select location

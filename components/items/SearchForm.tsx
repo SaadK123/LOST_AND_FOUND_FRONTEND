@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Path, useForm } from 'react-hook-form';
+import { Path, Resolver, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import InteractiveMapPicker from '../map/InteractiveMapPicker';
@@ -29,7 +29,7 @@ export default function SearchForm() {
   const [isSearching, setIsSearching] = useState(false);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SearchFormData>({
-    resolver: zodResolver<SearchFormData>(searchSchema),
+    resolver: zodResolver(searchSchema) as Resolver<SearchFormData>,
     defaultValues: {
       radiusKm: 10,
       description: '',
