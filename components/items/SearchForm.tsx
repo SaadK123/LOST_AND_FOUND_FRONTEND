@@ -28,10 +28,15 @@ export default function SearchForm() {
   const router = useRouter();
   const [isSearching, setIsSearching] = useState(false);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SearchFormData>({
-    resolver: zodResolver(searchSchema),
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+    resolver: zodResolver(searchSchema) as any,
     defaultValues: {
       radiusKm: 10,
+      description: '',
+      category: '',
+      latitude: 0,
+      longitude: 0,
+      locationName: '',
     }
   });
 
