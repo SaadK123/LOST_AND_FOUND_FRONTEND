@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Path, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import InteractiveMapPicker from '../map/InteractiveMapPicker';
@@ -29,7 +29,7 @@ export default function SearchForm() {
   const [isSearching, setIsSearching] = useState(false);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SearchFormData>({
-    resolver: zodResolver(searchSchema) as any,
+    resolver: zodResolver<SearchFormData>(searchSchema),
     defaultValues: {
       radiusKm: 10,
       description: '',
@@ -49,9 +49,9 @@ export default function SearchForm() {
     setValue('latitude', lat);
     setValue('longitude', lng);
     setValue('locationName', address);
-    // Cast to any to avoid narrow key union inference issues during type-check
-    if (city) setValue('city' as any, city);
-    if (country) setValue('country' as any, country);
+    // Explicitly cast field names to Path to satisfy react-hook-form's generic constraint
+    if (city) setValue('city' as Path<SearchFormData>, city);
+    if (country) setValue('country' as Path<SearchFormData>, country);
   };
 
   const onSubmit = async (data: SearchFormData) => {
