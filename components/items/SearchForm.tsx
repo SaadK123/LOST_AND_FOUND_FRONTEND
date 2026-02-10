@@ -28,7 +28,7 @@ export default function SearchForm() {
   const router = useRouter();
   const [isSearching, setIsSearching] = useState(false);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SearchFormData>({
     resolver: zodResolver(searchSchema) as any,
     defaultValues: {
       radiusKm: 10,
@@ -37,6 +37,9 @@ export default function SearchForm() {
       latitude: 0,
       longitude: 0,
       locationName: '',
+      city: '',
+      country: '',
+      dateLost: '',
     }
   });
 
