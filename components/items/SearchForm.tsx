@@ -19,7 +19,7 @@ const searchSchema = z.object({
   locationName: z.string().min(1, 'Please select a location on the map'),
   city: z.string().optional(),
   country: z.string().optional(),
-  radiusKm: z.number().default(10),
+  radiusKm: z.number(),
 });
 
 type SearchFormData = z.infer<typeof searchSchema>;
